@@ -2,6 +2,8 @@
 
 一个纯前端的照片墙合成工具，将多张照片合理摆放到自定义背景上，支持丰富的排版与效果调整，导出高分辨率成品图。无需安装、无需后端，所有处理都在浏览器本地完成。
 
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Lucasss1916/PhotoWall)
+
 ## 功能特性
 
 ### 画布
@@ -70,12 +72,35 @@ python3 -m http.server 8741
 
 ## 部署到 Cloudflare Pages
 
-**方式一：拖拽上传**
-1. 登录 Cloudflare Dashboard → Workers & Pages → Pages
-2. Create a project → Direct Upload
+点击上方的 **Deploy to Cloudflare Pages** 按钮可一键 fork 并部署。也可按以下方式手动部署。
+
+### 方式一：Git 自动部署（推荐）
+
+连接后每次 `git push` 到 `main` 分支都会自动重新部署。
+
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com) → 左侧 **Workers & Pages**
+2. **Create application** → **Pages** → **Connect to Git**
+3. 首次需授权 GitHub，选择授权本仓库
+4. 选中仓库 → **Begin setup**
+5. 按下表填写构建配置（纯静态站，无需构建）：
+
+   | 字段 | 值 |
+   |------|-----|
+   | Production branch | `main` |
+   | Framework preset | `None` |
+   | Build command | *（留空）* |
+   | Build output directory | `/` |
+
+6. **Save and Deploy**，完成后得到 `<project>.pages.dev` 链接
+
+### 方式二：拖拽上传
+
+1. Cloudflare Dashboard → Workers & Pages → Pages
+2. **Create a project** → **Direct Upload**
 3. 上传整个项目文件夹
 
-**方式二：CLI**
+### 方式三：Wrangler CLI
+
 ```bash
 npm install -g wrangler
 wrangler login
