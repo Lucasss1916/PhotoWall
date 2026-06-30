@@ -1,0 +1,12 @@
+# Claude / editor config
+.claude/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log

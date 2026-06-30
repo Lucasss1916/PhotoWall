@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>照片墙生成器</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ── -->
+  <header id="header">
+    <h1>照片<span>墙</span>生成器</h1>
+    <button class="btn-export" id="btnPng">导出 PNG</button>
+    <button class="btn-export" id="btnJpg">导出 JPG</button>
+  </header>
+
+  <!-- ── LEFT PANEL ── -->
+  <aside id="left-panel">
+
+    <div class="panel-section">
+      <div class="panel-label">画布尺寸</div>
+      <div class="preset-grid">
+        <button class="preset-btn" data-w="1080" data-h="1920">手机壁纸<br><span class="preset-sub">1080×1920</span></button>
+        <button class="preset-btn active" data-w="1920" data-h="1080">桌面壁纸<br><span class="preset-sub">1920×1080</span></button>
+        <button class="preset-btn" data-w="1080" data-h="1080">正方形<br><span class="preset-sub">1080×1080</span></button>
+        <button class="preset-btn" data-w="2480" data-h="3508">A4 海报<br><span class="preset-sub">2480×3508</span></button>
+        <button class="preset-btn" data-w="2560" data-h="1440">2K<br><span class="preset-sub">2560×1440</span></button>
+        <button class="preset-btn" data-w="3840" data-h="2160">4K<br><span class="preset-sub">3840×2160</span></button>
+      </div>
+      <div class="ctrl-row">
+        <label>宽</label>
+        <input type="number" id="inW" value="1920" min="100" max="8000">
+        <span class="unit">px</span>
+      </div>
+      <div class="ctrl-row">
+        <label>高</label>
+        <input type="number" id="inH" value="1080" min="100" max="8000">
+        <span class="unit">px</span>
+      </div>
+      <button class="btn-apply" id="btnApplySize" style="margin-top:4px">应用尺寸</button>
+    </div>
+    <div class="divider"></div>
+
+    <div class="panel-section">
+      <div class="panel-label">背景</div>
+      <div class="ctrl-row" style="margin-bottom:8px">
+        <label>颜色</label>
+        <input type="color" id="bgColor" value="#1a1a2e">
+        <span class="ctrl-hint">背景色</span>
+      </div>
+      <div class="upload-zone" id="bgUploadZone">
+        <div class="upload-icon">🖼</div>
+        上传背景图片
+        <input type="file" id="bgFile" accept="image/*">
+      </div>
+      <button class="btn-sm danger-hover" id="btnRemoveBg" style="width:100%;margin-top:6px;text-align:center">移除背景图片</button>
+    </div>
+    <div class="divider"></div>
+
+    <div class="panel-section">
+      <div class="panel-label">照片 <span class="badge" id="photoCount">0</span></div>
+      <div class="upload-zone" id="photoUploadZone">
+        <div class="upload-icon">📷</div>
+        拖入或点击上传照片（可多选）
+        <input type="file" id="photoFile" accept="image/*" multiple>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="panel-section">
+      <div class="panel-label">排版模式</div>
+      <div class="layout-btns">
+        <button class="layout-btn active" data-mode="manual">手动</button>
+        <button class="layout-btn" data-mode="grid">网格</button>
+        <button class="layout-btn" data-mode="scatter">散落</button>
+      </div>
+      <button class="btn-apply" id="btnApplyLayout">应用排版</button>
+    </div>
+
+  </aside>
+
+  <!-- ── CANVAS AREA ── -->
+  <main id="canvas-area">
+    <div id="canvas-wrapper">
+      <canvas id="c"></canvas>
+    </div>
+  </main>
+
+  <!-- ── RIGHT PANEL ── -->
+  <aside id="right-panel">
+
+    <div id="empty-state">
+      <div class="empty-icon">✦</div>
+      <div class="empty-hint">选中一张照片<br>来编辑其效果</div>
+    </div>
+
+    <div id="photo-opts" style="display:none">
+
+      <div class="panel-section">
+        <div class="panel-label">形状裁剪</div>
+        <div class="shape-grid">
+          <button class="shape-btn active" data-shape="rect"><span class="shape-icon">▬</span>矩形</button>
+          <button class="shape-btn" data-shape="rounded"><span class="shape-icon">▢</span>圆角</button>
+          <button class="shape-btn" data-shape="circle"><span class="shape-icon">●</span>圆形</button>
+          <button class="shape-btn" data-shape="heart"><span class="shape-icon">♥</span>心形</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="panel-section">
+        <div class="panel-label">边缘裁剪</div>
+        <div class="slider-row">
+          <label>上</label>
+          <input type="range" id="cropT" min="0" max="50" value="0">
+          <span class="slider-val" id="cropTVal">0%</span>
+        </div>
+        <div class="slider-row">
+          <label>右</label>
+          <input type="range" id="cropR" min="0" max="50" value="0">
+          <span class="slider-val" id="cropRVal">0%</span>
+        </div>
+        <div class="slider-row">
+          <label>下</label>
+          <input type="range" id="cropB" min="0" max="50" value="0">
+          <span class="slider-val" id="cropBVal">0%</span>
+        </div>
+        <div class="slider-row">
+          <label>左</label>
+          <input type="range" id="cropL" min="0" max="50" value="0">
+          <span class="slider-val" id="cropLVal">0%</span>
+        </div>
+        <button class="btn-sm" id="btnResetCrop" style="width:100%;margin-top:2px;text-align:center">重置裁剪</button>
+      </div>
+      <div class="divider"></div>
+
+      <div class="panel-section">
+        <div class="panel-label">边框</div>
+        <div class="ctrl-row">
+          <label>颜色</label>
+          <input type="color" id="borderColor" value="#ffffff">
+        </div>
+        <div class="ctrl-row">
+          <label>粗细</label>
+          <input type="number" id="borderWidth" value="0" min="0" max="40" style="width:70px">
+          <span class="unit">px</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="panel-section">
+        <div class="panel-label">阴影</div>
+        <div class="ctrl-row">
+          <label>开启</label>
+          <input type="checkbox" id="shadowOn">
+        </div>
+        <div id="shadow-opts">
+          <div class="ctrl-row">
+            <label>颜色</label>
+            <input type="color" id="shadowColor" value="#000000">
+          </div>
+          <div class="slider-row">
+            <label>模糊</label>
+            <input type="range" id="shadowBlur" min="0" max="60" value="15">
+            <span class="slider-val" id="shadowBlurVal">15</span>
+          </div>
+          <div class="slider-row">
+            <label>偏移X</label>
+            <input type="range" id="shadowOffX" min="-30" max="30" value="5">
+            <span class="slider-val" id="shadowOffXVal">5</span>
+          </div>
+          <div class="slider-row">
+            <label>偏移Y</label>
+            <input type="range" id="shadowOffY" min="-30" max="30" value="5">
+            <span class="slider-val" id="shadowOffYVal">5</span>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="panel-section">
+        <div class="panel-label">滤镜</div>
+        <div class="filter-grid">
+          <button class="filter-btn active" data-filter="none">原图</button>
+          <button class="filter-btn" data-filter="grayscale">黑白</button>
+          <button class="filter-btn" data-filter="sepia">复古</button>
+          <button class="filter-btn" data-filter="warm">暖色</button>
+          <button class="filter-btn" data-filter="cool">冷色</button>
+          <button class="filter-btn" data-filter="film">胶片</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="panel-section">
+        <div class="slider-row">
+          <label>不透明</label>
+          <input type="range" id="photoOpacity" min="0" max="100" value="100">
+          <span class="slider-val" id="opacityVal">100</span>
+        </div>
+        <div class="slider-row">
+          <label>旋转</label>
+          <input type="range" id="photoRotation" min="-180" max="180" value="0">
+          <span class="slider-val" id="rotationVal">0°</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="panel-section">
+        <div class="panel-label">效果同步</div>
+        <button class="btn-apply" id="btnSyncEffects">应用效果到其他照片</button>
+        <div class="sync-hint" id="syncHint"></div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="panel-section">
+        <div class="action-row">
+          <button class="btn-action" id="btnDuplicate">复制</button>
+          <button class="btn-action danger" id="btnDelete">删除</button>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
