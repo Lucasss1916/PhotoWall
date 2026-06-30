@@ -18,12 +18,13 @@ state.fabricCanvas.backgroundColor = '#1a1a2e';
 initCanvas(1920, 1080);
 
 // ── 2. 右侧面板显示/隐藏 ──────────────────────────────────────
+// 注意：选中/修改照片只更新面板内容，不自动弹出移动端抽屉，
+// 否则缩放、拖动照片时抽屉会弹出并用遮罩挡住画布。
+// 移动端由用户主动点击底部「编辑」Tab 查看编辑选项。
 function showPhotoPanel(obj) {
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('photo-opts').style.display  = 'block';
   syncRightPanel(obj);
-  // 移动端：选中照片时自动切到「编辑」抽屉
-  if (isMobile()) openDrawer('right');
 }
 
 function hidePhotoPanel() {
@@ -78,12 +79,19 @@ document.getElementById('btnDuplicate').addEventListener('click', () => {
 });
 
 // ── 6. 删除照片 ───────────────────────────────────────────────
-document.getElementById('btnDelete').addEventListener('click', deleteSelected);
+function handleDelete() {
+  deleteSelected(() => {
+    hidePhotoPanel();
+    if (isMobile()) closeDrawer();   // 删完关掉编辑抽屉
+  });
+}
+
+document.getElementById('btnDelete').addEventListener('click', handleDelete);
 
 document.addEventListener('keydown', e => {
   if ((e.key === 'Delete' || e.key === 'Backspace') &&
       !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-    deleteSelected();
+    handleDelete();
   }
 });
 

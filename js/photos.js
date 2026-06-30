@@ -33,7 +33,9 @@ export function setupPhotoUpload() {
   });
 }
 
-export function deleteSelected() {
+// 删除选中照片。onCleared 回调用于让 UI 切回空状态
+// （discardActiveObject 在 Fabric 5.x 程序化调用时不触发 selection:cleared 事件）
+export function deleteSelected(onCleared) {
   const obj = state.selectedObj;
   if (!obj) return;
   const idx = state.photoObjects.indexOf(obj);
@@ -41,5 +43,7 @@ export function deleteSelected() {
   state.fabricCanvas.remove(obj);
   state.fabricCanvas.discardActiveObject();
   state.fabricCanvas.renderAll();
+  state.selectedObj = null;       // 清除死引用
   updatePhotoCount();
+  if (typeof onCleared === 'function') onCleared();
 }
