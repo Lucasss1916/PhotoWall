@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>照片墙生成器</title>
 <link rel="stylesheet" href="css/styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -19,6 +19,11 @@
 
   <!-- ── LEFT PANEL ── -->
   <aside id="left-panel">
+
+    <div class="drawer-handle">
+      <span class="drawer-title">设置</span>
+      <button class="drawer-close" aria-label="关闭">✕</button>
+    </div>
 
     <div class="panel-section">
       <div class="panel-label">画布尺寸</div>
@@ -91,6 +96,11 @@
 
   <!-- ── RIGHT PANEL ── -->
   <aside id="right-panel">
+
+    <div class="drawer-handle">
+      <span class="drawer-title">编辑照片</span>
+      <button class="drawer-close" aria-label="关闭">✕</button>
+    </div>
 
     <div id="empty-state">
       <div class="empty-icon">✦</div>
@@ -223,6 +233,19 @@
 
     </div>
   </aside>
+
+  <!-- ── 移动端遮罩 + 底部 Tab 栏 ── -->
+  <div id="drawerBackdrop"></div>
+  <nav id="mobile-tabs">
+    <button class="mobile-tab" id="tabLeft">
+      <span class="tab-icon">⚙</span>
+      <span class="tab-label">设置</span>
+    </button>
+    <button class="mobile-tab" id="tabRight">
+      <span class="tab-icon">✦</span>
+      <span class="tab-label">编辑</span>
+    </button>
+  </nav>
 
 </div>
 

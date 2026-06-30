@@ -1,15 +1,39 @@
-import { state, SCALE } from './state.js';
+import { state, MAX_SCALE } from './state.js';
+
+// 根据画布区域可用空间计算合适的预览缩放
+function computeScale(w, h) {
+  const area = document.getElementById('canvas-area');
+  // 留出内边距，避免画布贴边
+  const availW = Math.max(100, area.clientWidth  - 32);
+  const availH = Math.max(100, area.clientHeight - 32);
+  const fit = Math.min(availW / w, availH / h);
+  // 不超过上限（小画布不放大过头），也不小到看不清
+  return Math.max(0.05, Math.min(fit, MAX_SCALE));
+}
 
 export function initCanvas(w, h) {
   state.canvasW = w;
   state.canvasH = h;
+  const scale = computeScale(w, h);
+  state.scale = scale;
   const fc = state.fabricCanvas;
-  fc.setWidth(w * SCALE);
-  fc.setHeight(h * SCALE);
-  fc.setZoom(SCALE);
-  document.getElementById('canvas-wrapper').style.width  = (w * SCALE) + 'px';
-  document.getElementById('canvas-wrapper').style.height = (h * SCALE) + 'px';
+  fc.setWidth(w * scale);
+  fc.setHeight(h * scale);
+  fc.setZoom(scale);
+  document.getElementById('canvas-wrapper').style.width  = (w * scale) + 'px';
+  document.getElementById('canvas-wrapper').style.height = (h * scale) + 'px';
   fc.renderAll();
+}
+
+// 容器尺寸变化（横竖屏、窗口缩放、抽屉开合）时重算预览缩放
+export function setupResize() {
+  let timer = null;
+  const onResize = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => initCanvas(state.canvasW, state.canvasH), 120);
+  };
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
 }
 
 export function setupCanvasEvents(onSelect, onDeselect) {
@@ -48,7 +72,7 @@ function exportCanvas(format) {
   const dataURL = fc.toDataURL({
     format: format === 'jpg' ? 'jpeg' : 'png',
     quality: 0.95,
-    multiplier: 1 / SCALE,
+    multiplier: 1 / state.scale,
   });
 
   const a = document.createElement('a');

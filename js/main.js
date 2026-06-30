@@ -1,5 +1,5 @@
-import { state, SCALE } from './state.js';
-import { initCanvas, setupCanvasEvents, setupExport, setupSizeControls } from './canvas.js';
+import { state } from './state.js';
+import { initCanvas, setupCanvasEvents, setupExport, setupSizeControls, setupResize } from './canvas.js';
 import { setupBackground } from './background.js';
 import { setupPhotoUpload, deleteSelected, updatePhotoCount } from './photos.js';
 import { setupLayout } from './layout.js';
@@ -22,6 +22,8 @@ function showPhotoPanel(obj) {
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('photo-opts').style.display  = 'block';
   syncRightPanel(obj);
+  // 移动端：选中照片时自动切到「编辑」抽屉
+  if (isMobile()) openDrawer('right');
 }
 
 function hidePhotoPanel() {
@@ -45,6 +47,8 @@ setupFilter();
 setupOpacityRotation();
 setupSyncEffects();
 setupExport();
+setupResize();
+setupMobileDrawers();
 
 // ── 5. 复制照片 ───────────────────────────────────────────────
 document.getElementById('btnDuplicate').addEventListener('click', () => {
@@ -82,3 +86,41 @@ document.addEventListener('keydown', e => {
     deleteSelected();
   }
 });
+
+// ── 7. 移动端底部抽屉 ─────────────────────────────────────────
+function isMobile() {
+  return window.matchMedia('(max-width: 900px)').matches;
+}
+
+function openDrawer(which) {
+  document.body.classList.remove('drawer-left', 'drawer-right');
+  document.body.classList.add('drawer-' + which);
+  document.getElementById('tabLeft').classList.toggle('active', which === 'left');
+  document.getElementById('tabRight').classList.toggle('active', which === 'right');
+}
+
+function closeDrawer() {
+  document.body.classList.remove('drawer-left', 'drawer-right');
+  document.getElementById('tabLeft').classList.remove('active');
+  document.getElementById('tabRight').classList.remove('active');
+}
+
+function setupMobileDrawers() {
+  const tabLeft  = document.getElementById('tabLeft');
+  const tabRight = document.getElementById('tabRight');
+  const backdrop = document.getElementById('drawerBackdrop');
+
+  // 点击标签：已打开则收起，否则打开对应抽屉
+  tabLeft.addEventListener('click', () => {
+    document.body.classList.contains('drawer-left') ? closeDrawer() : openDrawer('left');
+  });
+  tabRight.addEventListener('click', () => {
+    document.body.classList.contains('drawer-right') ? closeDrawer() : openDrawer('right');
+  });
+  backdrop.addEventListener('click', closeDrawer);
+
+  // 抽屉里每个面板顶部的关闭按钮
+  document.querySelectorAll('.drawer-close').forEach(btn => {
+    btn.addEventListener('click', closeDrawer);
+  });
+}
