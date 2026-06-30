@@ -3,9 +3,13 @@ import { state, MAX_SCALE } from './state.js';
 // 根据画布区域可用空间计算合适的预览缩放
 function computeScale(w, h) {
   const area = document.getElementById('canvas-area');
-  // 留出内边距，避免画布贴边
-  const availW = Math.max(100, area.clientWidth  - 32);
-  const availH = Math.max(100, area.clientHeight - 32);
+  // clientWidth/clientHeight 含 padding，需扣除真实 padding（移动端底部留给 Tab 栏）
+  const cs = getComputedStyle(area);
+  const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+  const padY = parseFloat(cs.paddingTop)  + parseFloat(cs.paddingBottom);
+  // 再留一点边距，避免画布贴边
+  const availW = Math.max(80, area.clientWidth  - padX - 24);
+  const availH = Math.max(80, area.clientHeight - padY - 24);
   const fit = Math.min(availW / w, availH / h);
   // 不超过上限（小画布不放大过头），也不小到看不清
   return Math.max(0.05, Math.min(fit, MAX_SCALE));
