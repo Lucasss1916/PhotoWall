@@ -175,6 +175,16 @@ input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
   transition: opacity .15s;
 }
 .btn-apply:hover { opacity: .85; }
+.btn-polish {
+  margin-top: 7px;
+  border: 1px solid rgba(233,69,96,.7);
+  background: rgba(233,69,96,.08);
+  color: var(--accent);
+}
+.btn-polish:hover {
+  background: rgba(233,69,96,.14);
+  opacity: 1;
+}
 
 /* ── Upload zone ── */
 .upload-zone {

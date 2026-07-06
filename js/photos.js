@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import { rand, setupUploadZone } from './utils.js';
+import { applyPolishedPhotoStyle } from './photo-style.js';
 
 export function updatePhotoCount() {
   const alive = state.photoObjects.filter(o => state.fabricCanvas.getObjects().includes(o));
@@ -9,21 +10,25 @@ export function updatePhotoCount() {
 function addPhoto(file) {
   const url = URL.createObjectURL(file);
   fabric.Image.fromURL(url, img => {
-    const maxSide = state.canvasW * 0.22;
+    const maxSide = Math.min(state.canvasW, state.canvasH) * 0.28;
     const sc = Math.min(maxSide / img.width, maxSide / img.height, 1);
     img.set({
       scaleX: sc, scaleY: sc,
-      left: rand(state.canvasW * 0.05, state.canvasW * 0.75),
-      top:  rand(state.canvasH * 0.05, state.canvasH * 0.75),
+      left: rand(state.canvasW * 0.2, state.canvasW * 0.8),
+      top:  rand(state.canvasH * 0.2, state.canvasH * 0.8),
+      angle: rand(-6, 6),
+      originX: 'center', originY: 'center',
       _shape: 'rect',
       _filter: 'none',
       _crop: { t: 0, r: 0, b: 0, l: 0 },
     });
+    applyPolishedPhotoStyle(img, { depth: state.photoObjects.length });
     state.fabricCanvas.add(img);
     state.photoObjects.push(img);
     state.fabricCanvas.setActiveObject(img);
     state.fabricCanvas.renderAll();
     updatePhotoCount();
+    URL.revokeObjectURL(url);
   });
 }
 
