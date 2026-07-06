@@ -83,19 +83,49 @@ function fitBgImage(img) {
 
 function loadBgFile(file) {
   const url = URL.createObjectURL(file);
-  loadBgImage(url, () => URL.revokeObjectURL(url));
+  loadBgImage(url, { onFinish: () => URL.revokeObjectURL(url) });
 }
 
-function loadBgImage(src, onLoad) {
+function loadBgImage(src, options = {}) {
+  const { crossOrigin, onFinish, onError, onSuccess } = options;
+  const imageOptions = crossOrigin ? { crossOrigin } : undefined;
+
   fabric.Image.fromURL(src, img => {
-    if (!img) return;
+    if (!img || !img.width || !img.height) {
+      if (onError) onError();
+      if (onFinish) onFinish();
+      return;
+    }
     if (state.bgImageObj) state.fabricCanvas.remove(state.bgImageObj);
     state.bgImageObj = img;
     fitBgImage(img);
     state.fabricCanvas.insertAt(img, 0);
     state.fabricCanvas.renderAll();
-    if (onLoad) onLoad();
-  });
+    if (onSuccess) onSuccess();
+    if (onFinish) onFinish();
+  }, imageOptions);
+}
+
+function getBackgroundUrlInput() {
+  return document.getElementById('bgUrl');
+}
+
+function setBackgroundUrlStatus(message, type = '') {
+  const status = document.getElementById('bgUrlStatus');
+  status.textContent = message;
+  status.classList.toggle('error', type === 'error');
+  status.classList.toggle('success', type === 'success');
+}
+
+function parseBackgroundUrl(value) {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return null;
+
+  const url = new URL(trimmedValue, window.location.href);
+  if (!['http:', 'https:'].includes(url.protocol)) {
+    throw new Error('只支持 http 或 https 图片链接');
+  }
+  return url.href;
 }
 
 function clearActivePreset() {
@@ -121,8 +151,51 @@ function setupBackgroundPresets() {
   grid.querySelectorAll('.background-preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       clearActivePreset();
+      setBackgroundUrlStatus('');
       btn.classList.add('active');
       loadBgImage(btn.dataset.bgSrc);
+    });
+  });
+}
+
+function setupBackgroundUrlLoader() {
+  const form = document.getElementById('bgUrlForm');
+  const input = getBackgroundUrlInput();
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+
+    let imageUrl = '';
+    try {
+      imageUrl = parseBackgroundUrl(input.value);
+    } catch (error) {
+      setBackgroundUrlStatus(error.message, 'error');
+      return;
+    }
+
+    if (!imageUrl) {
+      setBackgroundUrlStatus('请输入图片 URL', 'error');
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = '加载中';
+    setBackgroundUrlStatus('正在加载背景图片...');
+
+    loadBgImage(imageUrl, {
+      crossOrigin: 'anonymous',
+      onSuccess: () => {
+        clearActivePreset();
+        setBackgroundUrlStatus('已加载 URL 背景', 'success');
+      },
+      onError: () => {
+        setBackgroundUrlStatus('图片加载失败，可能是链接无效或图片服务器不允许跨域访问', 'error');
+      },
+      onFinish: () => {
+        submitButton.disabled = false;
+        submitButton.textContent = '加载 URL';
+      },
     });
   });
 }
@@ -142,13 +215,18 @@ export function setupBackground() {
   setupUploadZone('bgUploadZone', 'bgFile', files => {
     if (!files[0]) return;
     clearActivePreset();
+    getBackgroundUrlInput().value = '';
+    setBackgroundUrlStatus('');
     loadBgFile(files[0]);
   });
 
   setupBackgroundPresets();
+  setupBackgroundUrlLoader();
 
   document.getElementById('btnRemoveBg').addEventListener('click', () => {
     clearActivePreset();
+    getBackgroundUrlInput().value = '';
+    setBackgroundUrlStatus('');
     if (state.bgImageObj) {
       state.fabricCanvas.remove(state.bgImageObj);
       state.bgImageObj = null;

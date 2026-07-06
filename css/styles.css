@@ -95,8 +95,9 @@ html, body {
 .unit  { color: var(--text3); }
 .ctrl-hint { color: var(--text2); font-size: 11px; margin-left: 2px; }
 
-input[type=number], input[type=text] {
+input[type=number], input[type=text], input[type=url] {
   width: 100%;
+  min-width: 0;
   padding: 4px 8px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -106,7 +107,7 @@ input[type=number], input[type=text] {
   outline: none;
   transition: border-color .15s;
 }
-input[type=number]:focus, input[type=text]:focus { border-color: var(--accent); }
+input[type=number]:focus, input[type=text]:focus, input[type=url]:focus { border-color: var(--accent); }
 
 input[type=color] {
   width: 30px; height: 24px;
@@ -241,6 +242,25 @@ input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
   box-shadow: 0 0 0 1px var(--accent);
 }
 
+.background-url-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.background-url-form .btn-sm {
+  white-space: nowrap;
+}
+.background-url-status {
+  min-height: 15px;
+  margin-bottom: 8px;
+  color: var(--text3);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.background-url-status.error { color: #f85149; }
+.background-url-status.success { color: var(--accent); }
+
 /* ── Badge ── */
 .badge {
   display: inline-flex;
@@ -343,6 +363,7 @@ input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
   transition: all .15s;
 }
 .btn-sm:hover { border-color: var(--border); color: var(--text); }
+.btn-sm:disabled { opacity: .6; cursor: progress; }
 .btn-sm.danger-hover:hover { border-color: #f85149; color: #f85149; }
 
 /* ── Action buttons ── */
@@ -528,7 +549,7 @@ input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
   .btn-action, .btn-sm { padding: 10px 4px; }
   input[type=range] { height: 28px; }
   input[type=color] { width: 38px; height: 30px; }
-  input[type=number], input[type=text] { padding: 8px; font-size: 16px; } /* 16px 防 iOS 聚焦缩放 */
+  input[type=number], input[type=text], input[type=url] { padding: 8px; font-size: 16px; } /* 16px 防 iOS 聚焦缩放 */
   .ctrl-row label, .slider-row label { font-size: 13px; }
 }
 
